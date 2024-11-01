@@ -30,101 +30,15 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Caminho para o arquivo shapefile
-shapefile_path = os.path.join(os.getcwd(), 'shapefile', 'PB_Municipios_2022.shp')  # Certifique-se de que o nome do arquivo está correto
+link_df_total = os.path.join(os.getcwd(),'df_total.parquet')
+link_df_baixo_peso = os.path.join(os.getcwd(),'df_baixo_peso.parquet')
 
-# Carregar o shapefile
-data = gpd.read_file(shapefile_path)
-
-# Salvar como GeoJSON
-data.to_file('municipios_paraiba.geojson', driver='GeoJSON')
-
-
-
-# Caminho relativo para o diretório onde estão os arquivos .csv
-diretorio_csv = os.path.join(os.getcwd(), 'Dados_csv')
-
-# Função para carregar dados diretamente dos arquivos CSV
-def load_data(diretorio_csv):
-    dataframes = []
-    for arquivo in os.listdir(diretorio_csv):
-        if arquivo.endswith('.csv'):
-            caminho_completo = os.path.join(diretorio_csv, arquivo)
-            try:
-                # Definir os tipos de dados esperados para as colunas problemáticas
-                dtypes = {
-                    'IDADEMAE': 'float64',  # Exemplo, ajuste conforme necessário
-                    'CODMUNNASC': 'str',     # Manter como string
-                    'PESO': 'str'            # Manter como string antes da conversão
-                }
-                
-                # Carregar cada arquivo CSV em um DataFrame e adicionar à lista
-                df = pd.read_csv(caminho_completo, dtype=dtypes)
-                dataframes.append(df)
-            except Exception as e:
-                st.error(f'Erro ao ler o arquivo {arquivo}: {e}')
+if 'df_total' not in st.session_state:
+    df_total = pd.read_parquet(link_df_total)
+    df_baixo_peso = pd.read_parquet(link_df_baixo_peso)
+    st.session_state['df_total'] =  df_total
+    st.session_state['df_baixo_peso'] = df_baixo_peso
     
-    # Concatenar todos os DataFrames em um único DataFrame, se houver dados
-    if dataframes:
-        df_total = pd.concat(dataframes, ignore_index=True)
-        return df_total
-    else:
-        st.warning('Nenhum arquivo .csv encontrado ou lido.')
-        return None
-
-# Carregar os dados CSV
-df_total = load_data(diretorio_csv)
-
-
-
-# Função para pré-processamento dos dados
-def preprocess_data(df):
-    try:
-        # Converte a coluna DTNASC para datetime
-        df['DTNASC'] = pd.to_datetime(df['DTNASC'], format='%d%m%Y', errors='coerce')
-        
-        # Converte a coluna PESO para string, substitui vírgulas por pontos e remove espaços
-        df['PESO'] = df['PESO'].astype(str).str.replace(',', '.').str.strip()
-        
-        # Converter para float, forçando valores inválidos a serem NaN
-        df['PESO'] = pd.to_numeric(df['PESO'], errors='coerce')
-        
-        # Converter a idade da mãe para numérico
-        df['IDADEMAE'] = pd.to_numeric(df['IDADEMAE'], errors='coerce')
-
-        # Garantir que CODMUNNASC seja uma string
-        df['CODMUNNASC'] = df['CODMUNNASC'].fillna('').astype(str)
-
-        # Filtragem para pesos abaixo de 2500 e códigos de município que começam com '25'
-        df_baixo_peso = df[(df['PESO'] < 2500) & (df['PESO'] > 0) & (df['CODMUNNASC'].str.startswith('25'))].reset_index(drop=True)
-        
-        # Adiciona a coluna 'Ano' ao DataFrame df_baixo_peso
-        df_baixo_peso['Ano'] = df_baixo_peso['DTNASC'].dt.year
-
-        return df_baixo_peso
-    except Exception as e:
-        st.error(f"Erro durante o pré-processamento: {e}")
-        return None
-
-# Inicializa df_baixo_peso como None
-df_baixo_peso = None
-
-# Verifique as colunas do GeoDataFrame
-if 'CD_MUN' in data.columns and 'NM_MUN' in data.columns:
-    municipios_mapping = data[['CD_MUN', 'NM_MUN']].copy()
-    municipios_mapping.columns = ['CODMUNNASC', 'Nome_Municipio']
-else:
-    raise ValueError("As colunas 'CD_MUN' e 'NM_MUN' não estão presentes no GeoDataFrame.")
-
-# Garantir que CODMUNNASC seja string para corresponder com os DataFrames
-municipios_mapping['CODMUNNASC'] = municipios_mapping['CODMUNNASC'].astype(str)
-
-# Mesclar o nome do município em df_baixo_peso e df_total
-if df_total is not None:
-    df_total = df_total.merge(municipios_mapping, on='CODMUNNASC', how='left')
-    df_baixo_peso = preprocess_data(df_total)  # Chama a função de pré-processamento
-    if df_baixo_peso is not None:
-        df_baixo_peso = df_baixo_peso.merge(municipios_mapping, on='CODMUNNASC', how='left')
 
 # Função para calcular métricas
 def calculate_metrics(df_total, df_baixo_peso):
@@ -221,20 +135,22 @@ def plot_nascimentos_por_ano(df_total, df_baixo_peso):
 def display_municipal_analysis(df_baixo_peso, df_total):
 
     # Calcular métricas por município
+    df_baixo_peso['CODMUNNASC'] = df_baixo_peso['CODMUNNASC'].astype(int)
     metrics = df_baixo_peso['CODMUNNASC'].value_counts().reset_index()
     metrics.columns = ['CODMUNNASC', 'Nascimentos_Abaixo_Peso']
 
+    df_total['CODMUNNASC'] = df_total['CODMUNNASC'].astype(int)
     total_nascimentos = df_total['CODMUNNASC'].value_counts().reset_index()
     total_nascimentos.columns = ['CODMUNNASC', 'Total_Nascimentos']
 
     # Mesclar os DataFrames
     merged = pd.merge(metrics, total_nascimentos, on='CODMUNNASC', how='outer')
     merged['Taxa_Abaixo_Peso'] = (merged['Nascimentos_Abaixo_Peso'] / merged['Total_Nascimentos']) * 100
-    merged.fillna(0, inplace=True)  # Preencher NaN com 0
+    merged = merged.fillna(0)  # Preencher NaN com 0
 
     # Criar um GeoDataFrame da Paraíba
     gdf_municipios = gpd.read_file('municipios_paraiba.geojson')  # Caminho do GeoJSON
-    gdf_municipios['CODMUNNASC'] = gdf_municipios['CD_MUN'].astype(str)  # Usar a coluna correta
+    gdf_municipios['CODMUNNASC'] = gdf_municipios['CD_MUN'].astype(int)  # Usar a coluna correta
 
     # Mesclar o GeoDataFrame com as métricas
     gdf_merged = gdf_municipios.merge(merged, on='CODMUNNASC', how='left')
@@ -271,6 +187,8 @@ def display_municipal_analysis(df_baixo_peso, df_total):
 
 # Função para visualização municipal comparativa
 def display_municipal_analysis_comparative(df_baixo_peso, df_total):
+    df_baixo_peso = df_baixo_peso.rename(columns={'Nome_Municipio_x': 'Nome_Municipio'}).drop('Nome_Municipio_y', axis=1)
+    print(df_baixo_peso.info())
     municipios = df_baixo_peso['Nome_Municipio'].unique().tolist()
     selected_municipios = st.multiselect("Selecione dois municípios para comparação", municipios)
 
@@ -322,9 +240,6 @@ def display_municipal_analysis_comparative(df_baixo_peso, df_total):
     else:
         st.warning("Por favor, selecione exatamente dois municípios para comparação.")
 
-
-
-
 st.title('Análise de Baixo Peso ao Nascer')
 
 tab1, tab2, tab3 = st.tabs(["Página Inicial", "Visualização Geral", "Visualização Municipal"])
@@ -367,22 +282,9 @@ with tab1:
 # Página de Visualização Geral do Estado
 with tab2:
     st.header("Visualização Geral do Estado (Paraíba)")
-    
-    if df_total is not None:
-        df_baixo_peso = preprocess_data(df_total)
-        if df_baixo_peso is not None:
-            display_municipal_analysis(df_baixo_peso, df_total)
-            display_general_analysis(df_baixo_peso, df_total)
-    else:
-        st.error('Nenhum dado disponível para processamento.')
-
-# Página de Visualização Municipal
+    display_municipal_analysis(st.session_state['df_baixo_peso'], st.session_state['df_total'])
+    display_general_analysis(st.session_state['df_baixo_peso'], st.session_state['df_total'])
 # Página de Visualização Municipal
 with tab3:
     st.header("Visualização Comparativo Municipal")
-
-    if df_total is not None:
-        df_baixo_peso = preprocess_data(df_total)
-        if df_baixo_peso is not None:
-            # Exibir visualização municipal comparativa
-            display_municipal_analysis_comparative(df_baixo_peso,df_total)  # Passar apenas df_baixo_peso
+    display_municipal_analysis_comparative(st.session_state['df_baixo_peso'],st.session_state['df_total'])  # Passar apenas df_baixo_peso
