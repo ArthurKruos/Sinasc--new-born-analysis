@@ -18,7 +18,7 @@ st.markdown(
     }
     .stMetric, .stText {
         color: #89ffda;  /* Texto nas métricas e outros elementos */
-    e o jeito}
+    }
     h1, h2, h3, h4, h5, h6 {
         color: #89ffda;  /* Cor dos títulos */
     }
@@ -37,7 +37,7 @@ shapefile_path = os.path.join(os.getcwd(), 'shapefile', 'PB_Municipios_2022.shp'
 gdf = gpd.read_file(shapefile_path)
 
 # Salvar como GeoJSON
-# gdf.to_file('municipios_paraiba.geojson', driver='GeoJSON')
+gdf.tos_file('municipios_paraiba.geojson', driver='GeoJSON')
 
 
 
