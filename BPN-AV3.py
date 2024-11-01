@@ -34,10 +34,10 @@ st.markdown(
 shapefile_path = os.path.join(os.getcwd(), 'shapefile', 'PB_Municipios_2022.shp')  # Certifique-se de que o nome do arquivo está correto
 
 # Carregar o shapefile
-gdf = gpd.read_file(shapefile_path)
+data = gpd.read_file(shapefile_path)
 
 # Salvar como GeoJSON
-gdf.to_file('municipios_paraiba.geojson', driver='GeoJSON')
+data.to_file('municipios_paraiba.geojson', driver='GeoJSON')
 
 
 
@@ -109,33 +109,12 @@ def preprocess_data(df):
 # Inicializa df_baixo_peso como None
 df_baixo_peso = None
 
-@st.cache_data
-def get_data():
-    # Tenta carregar o arquivo geojson
-    try:
-        df_raw = gpd.read_file('municipios_paraiba.geojson')
-    except FileNotFoundError:
-        st.error("O arquivo 'municipios_paraiba.geojson' não foi encontrado.")
-        return None
-
-    # Verifica se as colunas necessárias estão presentes
-    required_columns = ['CD_MUN', 'NM_MUN']
-    if not all(column in df_raw.columns for column in required_columns):
-        st.error("As colunas necessárias não estão presentes no arquivo de dados.")
-        return None
-
-    # Filtra os dados, se necessário
-    # (Ajuste conforme o filtro desejado ou remova esta linha caso não precise)
-    df_raw = df_raw[df_raw['NM_MUN'] != ""]
-
-    return df_raw
-
-# Carregar e preparar a correspondência de nomes dos municípios
-data = get_data()
-if data is not None:
-    # Continue com a lógica de mapeamento ou processamento
+# Verifique as colunas do GeoDataFrame
+if 'CD_MUN' in data.columns and 'NM_MUN' in data.columns:
     municipios_mapping = data[['CD_MUN', 'NM_MUN']].copy()
-municipios_mapping.columns = ['CODMUNNASC', 'Nome_Municipio']
+    municipios_mapping.columns = ['CODMUNNASC', 'Nome_Municipio']
+else:
+    raise ValueError("As colunas 'CD_MUN' e 'NM_MUN' não estão presentes no GeoDataFrame.")
 
 # Garantir que CODMUNNASC seja string para corresponder com os DataFrames
 municipios_mapping['CODMUNNASC'] = municipios_mapping['CODMUNNASC'].astype(str)
