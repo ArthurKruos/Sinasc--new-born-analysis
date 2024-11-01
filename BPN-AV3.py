@@ -37,7 +37,7 @@ shapefile_path = os.path.join(os.getcwd(), 'shapefile', 'PB_Municipios_2022.shp'
 gdf = gpd.read_file(shapefile_path)
 
 # Salvar como GeoJSON
-gdf.tos_file('municipios_paraiba.geojson', driver='GeoJSON')
+gdf.to_file('municipios_paraiba.geojson', driver='GeoJSON')
 
 
 
