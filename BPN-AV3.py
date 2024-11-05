@@ -118,169 +118,169 @@ with tab1:
     """)  # Adicione sua descrição aqui
 
 # Página de Visualização Geral do Estado
-# with tab2:
-#     # Função para visualização geral
-#     def display_general_analysis(df_baixo_peso, df_total):
+with tab2:
+    # Função para visualização geral
+    def display_general_analysis(df_baixo_peso, df_total):
 
-#         # Criar um filtro deslizante para a idade da mãe
-#         idade_mae_min = int(df_total['IDADEMAE'].min())
-#         idade_mae_max = int(df_total['IDADEMAE'].max())
+        # Criar um filtro deslizante para a idade da mãe
+        idade_mae_min = int(df_total['IDADEMAE'].min())
+        idade_mae_max = int(df_total['IDADEMAE'].max())
         
-#         # Usar uma chave única para o slider de idade da mãe
-#         idade_mae_selecionada = st.slider(
-#             "Selecione a faixa etária da mãe:",
-#             min_value=idade_mae_min,
-#             max_value=idade_mae_max,
-#             value=(idade_mae_min, idade_mae_max),  # Valores padrão
-#             key="idade_mae_slider_geral"  # Chave única
-#         )
+        # Usar uma chave única para o slider de idade da mãe
+        idade_mae_selecionada = st.slider(
+            "Selecione a faixa etária da mãe:",
+            min_value=idade_mae_min,
+            max_value=idade_mae_max,
+            value=(idade_mae_min, idade_mae_max),  # Valores padrão
+            key="idade_mae_slider_geral"  # Chave única
+        )
 
-#         # Filtrar os dados de df_total e df_baixo_peso com base na idade da mãe
-#         df_filtrado_total = df_total[
-#             (df_total['IDADEMAE'] >= idade_mae_selecionada[0]) &
-#             (df_total['IDADEMAE'] <= idade_mae_selecionada[1])
-#         ]
+        # Filtrar os dados de df_total e df_baixo_peso com base na idade da mãe
+        df_filtrado_total = df_total[
+            (df_total['IDADEMAE'] >= idade_mae_selecionada[0]) &
+            (df_total['IDADEMAE'] <= idade_mae_selecionada[1])
+        ]
         
-#         df_baixo_peso_filtrado = df_baixo_peso[
-#             (df_baixo_peso['IDADEMAE'] >= idade_mae_selecionada[0]) &
-#             (df_baixo_peso['IDADEMAE'] <= idade_mae_selecionada[1])
-#         ]
+        df_baixo_peso_filtrado = df_baixo_peso[
+            (df_baixo_peso['IDADEMAE'] >= idade_mae_selecionada[0]) &
+            (df_baixo_peso['IDADEMAE'] <= idade_mae_selecionada[1])
+        ]
 
-#         # Calcular as métricas com base nos dados filtrados
-#         total_baixo_peso, total_nascidos, taxa_pb, media_idade_mae = calculate_metrics(df_filtrado_total, df_baixo_peso_filtrado)
+        # Calcular as métricas com base nos dados filtrados
+        total_baixo_peso, total_nascidos, taxa_pb, media_idade_mae = calculate_metrics(df_filtrado_total, df_baixo_peso_filtrado)
 
-#         if total_baixo_peso is not None:
-#             # Criar 4 colunas para exibir as métricas
-#             col1, col2, col3, col4 = st.columns(4)
+        if total_baixo_peso is not None:
+            # Criar 4 colunas para exibir as métricas
+            col1, col2, col3, col4 = st.columns(4)
 
-#             # Adicionar cards nas colunas
-#             with col1:
-#                 st.metric("Total de Nascimentos Abaixo do Peso", total_baixo_peso)
+            # Adicionar cards nas colunas
+            with col1:
+                st.metric("Total de Nascimentos Abaixo do Peso", total_baixo_peso)
 
-#             with col2:
-#                 st.metric("Total de Nascimentos", total_nascidos)
+            with col2:
+                st.metric("Total de Nascimentos", total_nascidos)
 
-#             with col3:
-#                 st.metric("Nascimentos Abaixo do Peso (%)", f"{taxa_pb:.2f}")
+            with col3:
+                st.metric("Nascimentos Abaixo do Peso (%)", f"{taxa_pb:.2f}")
             
-#             with col4:
-#                 st.metric("Média da Idade das Mães", f"{media_idade_mae:.2f}")
+            with col4:
+                st.metric("Média da Idade das Mães", f"{media_idade_mae:.2f}")
 
-#             # Adicionar gráfico de evolução do número de nascimentos ao longo dos anos
-#             plot_nascimentos_por_ano(df_filtrado_total, df_baixo_peso_filtrado)
+            # Adicionar gráfico de evolução do número de nascimentos ao longo dos anos
+            plot_nascimentos_por_ano(df_filtrado_total, df_baixo_peso_filtrado)
     
-#     # Função para visualização por município
-#     def display_municipal_analysis(df_baixo_peso, df_total):
+    # Função para visualização por município
+    def display_municipal_analysis(df_baixo_peso, df_total):
 
-#         # Calcular métricas por município
-#         df_baixo_peso['CODMUNNASC'] = df_baixo_peso['CODMUNNASC'].astype(int)
-#         metrics = df_baixo_peso['CODMUNNASC'].value_counts().reset_index()
-#         metrics.columns = ['CODMUNNASC', 'Nascimentos_Abaixo_Peso']
+        # Calcular métricas por município
+        df_baixo_peso['CODMUNNASC'] = df_baixo_peso['CODMUNNASC'].astype(int)
+        metrics = df_baixo_peso['CODMUNNASC'].value_counts().reset_index()
+        metrics.columns = ['CODMUNNASC', 'Nascimentos_Abaixo_Peso']
 
-#         df_total['CODMUNNASC'] = df_total['CODMUNNASC'].astype(int)
-#         total_nascimentos = df_total['CODMUNNASC'].value_counts().reset_index()
-#         total_nascimentos.columns = ['CODMUNNASC', 'Total_Nascimentos']
+        df_total['CODMUNNASC'] = df_total['CODMUNNASC'].astype(int)
+        total_nascimentos = df_total['CODMUNNASC'].value_counts().reset_index()
+        total_nascimentos.columns = ['CODMUNNASC', 'Total_Nascimentos']
 
-#         # Mesclar os DataFrames
-#         merged = pd.merge(metrics, total_nascimentos, on='CODMUNNASC', how='outer')
-#         merged['Taxa_Abaixo_Peso'] = (merged['Nascimentos_Abaixo_Peso'] / merged['Total_Nascimentos']) * 100
-#         merged = merged.fillna(0)  # Preencher NaN com 0
+        # Mesclar os DataFrames
+        merged = pd.merge(metrics, total_nascimentos, on='CODMUNNASC', how='outer')
+        merged['Taxa_Abaixo_Peso'] = (merged['Nascimentos_Abaixo_Peso'] / merged['Total_Nascimentos']) * 100
+        merged = merged.fillna(0)  # Preencher NaN com 0
 
-#         # Criar um GeoDataFrame da Paraíba
-#         gdf_municipios = gpd.read_file('municipios_paraiba.geojson')  # Caminho do GeoJSON
-#         gdf_municipios['CODMUNNASC'] = gdf_municipios['CD_MUN'].astype(int)  # Usar a coluna correta
+        # Criar um GeoDataFrame da Paraíba
+        gdf_municipios = gpd.read_file('municipios_paraiba.geojson')  # Caminho do GeoJSON
+        gdf_municipios['CODMUNNASC'] = gdf_municipios['CD_MUN'].astype(int)  # Usar a coluna correta
 
-#         # Mesclar o GeoDataFrame com as métricas
-#         gdf_merged = gdf_municipios.merge(merged, on='CODMUNNASC', how='left')
+        # Mesclar o GeoDataFrame com as métricas
+        gdf_merged = gdf_municipios.merge(merged, on='CODMUNNASC', how='left')
 
-#         # Criar o gráfico choropleth
-#         fig = px.choropleth(
-#             gdf_merged,
-#             geojson=gdf_merged.geometry,
-#             locations=gdf_merged.index,
-#             color='Taxa_Abaixo_Peso',  # Usar a taxa de nascimentos abaixo do peso
-#             hover_name='NM_MUN',
-#             hover_data=['Nascimentos_Abaixo_Peso', 'Total_Nascimentos'],
-#             color_continuous_scale=px.colors.sequential.YlOrRd,  # Amarelo para vermelho
-#             labels={'Taxa_Abaixo_Peso': 'Taxa de Nascimentos Abaixo do Peso (%)'}
-#         )
+        # Criar o gráfico choropleth
+        fig = px.choropleth(
+            gdf_merged,
+            geojson=gdf_merged.geometry,
+            locations=gdf_merged.index,
+            color='Taxa_Abaixo_Peso',  # Usar a taxa de nascimentos abaixo do peso
+            hover_name='NM_MUN',
+            hover_data=['Nascimentos_Abaixo_Peso', 'Total_Nascimentos'],
+            color_continuous_scale=px.colors.sequential.YlOrRd,  # Amarelo para vermelho
+            labels={'Taxa_Abaixo_Peso': 'Taxa de Nascimentos Abaixo do Peso (%)'}
+        )
 
-#         # Ajustes para o gráfico
-#         fig.update_geos(
-#             fitbounds="locations",
-#             visible=False,
-#             bgcolor='rgba(0,0,0,0)')  #transparente
+        # Ajustes para o gráfico
+        fig.update_geos(
+            fitbounds="locations",
+            visible=False,
+            bgcolor='rgba(0,0,0,0)')  #transparente
         
-#         # Ajusta o mapa
-#         fig.update_layout(
-#             height=600 ,
-#             title_text='Taxa de Nascimentos Abaixo do Peso por Município na Paraíba',
-#             paper_bgcolor='rgba(0,0,0,0)',  # Fundo do gráfico transparente
-#             plot_bgcolor='rgba(0,0,0,0)',    # Fundo da área de plotagem transparente
-#             coloraxis_colorbar=dict(title="Nascimentos Abaixo do Peso (%)")  # Título da barra de cores
-#         )
+        # Ajusta o mapa
+        fig.update_layout(
+            height=600 ,
+            title_text='Taxa de Nascimentos Abaixo do Peso por Município na Paraíba',
+            paper_bgcolor='rgba(0,0,0,0)',  # Fundo do gráfico transparente
+            plot_bgcolor='rgba(0,0,0,0)',    # Fundo da área de plotagem transparente
+            coloraxis_colorbar=dict(title="Nascimentos Abaixo do Peso (%)")  # Título da barra de cores
+        )
 
-#         # Exibir o gráfico
-#         st.plotly_chart(fig)  # Verifique se esta é a única chamada
+        # Exibir o gráfico
+        st.plotly_chart(fig)  # Verifique se esta é a única chamada
 
-#     st.header("Visualização Geral do Estado (Paraíba)")
-#     display_municipal_analysis(st.session_state['df_baixo_peso'], st.session_state['df_total'])
-#     display_general_analysis(st.session_state['df_baixo_peso'], st.session_state['df_total'])
-# # Página de Visualização Municipal
-# with tab3:
-#     # Função para visualização municipal comparativa
-#     def display_municipal_analysis_comparative(df_baixo_peso, df_total):
-#         df_baixo_peso = df_baixo_peso.rename(columns={'Nome_Municipio_x': 'Nome_Municipio'}).drop('Nome_Municipio_y', axis=1)
-#         print(df_baixo_peso.info())
-#         municipios = df_baixo_peso['Nome_Municipio'].unique().tolist()
-#         selected_municipios = st.multiselect("Selecione dois municípios para comparação", municipios)
+    st.header("Visualização Geral do Estado (Paraíba)")
+    display_municipal_analysis(st.session_state['df_baixo_peso'], st.session_state['df_total'])
+    display_general_analysis(st.session_state['df_baixo_peso'], st.session_state['df_total'])
+# Página de Visualização Municipal
+with tab3:
+    # Função para visualização municipal comparativa
+    def display_municipal_analysis_comparative(df_baixo_peso, df_total):
+        df_baixo_peso = df_baixo_peso.rename(columns={'Nome_Municipio_x': 'Nome_Municipio'}).drop('Nome_Municipio_y', axis=1)
+        print(df_baixo_peso.info())
+        municipios = df_baixo_peso['Nome_Municipio'].unique().tolist()
+        selected_municipios = st.multiselect("Selecione dois municípios para comparação", municipios)
 
-#         if len(selected_municipios) == 2:
-#             # Filtra os dados para os municípios selecionados
-#             df_municipio1 = df_baixo_peso[df_baixo_peso['Nome_Municipio'] == selected_municipios[0]]
-#             df_municipio2 = df_baixo_peso[df_baixo_peso['Nome_Municipio'] == selected_municipios[1]]
+        if len(selected_municipios) == 2:
+            # Filtra os dados para os municípios selecionados
+            df_municipio1 = df_baixo_peso[df_baixo_peso['Nome_Municipio'] == selected_municipios[0]]
+            df_municipio2 = df_baixo_peso[df_baixo_peso['Nome_Municipio'] == selected_municipios[1]]
 
-#             # Criar um DataFrame com as métricas
-#             metricas = {
-#                 'Municipio': [selected_municipios[0], selected_municipios[1]],
-#                 'Nascimentos Abaixo do Peso': [len(df_municipio1), len(df_municipio2)],
-#                 'Total de Nascimentos': [
-#                     len(df_total[df_total['Nome_Municipio'] == selected_municipios[0]]),
-#                     len(df_total[df_total['Nome_Municipio'] == selected_municipios[1]])
-#                 ]
-#             }
+            # Criar um DataFrame com as métricas
+            metricas = {
+                'Municipio': [selected_municipios[0], selected_municipios[1]],
+                'Nascimentos Abaixo do Peso': [len(df_municipio1), len(df_municipio2)],
+                'Total de Nascimentos': [
+                    len(df_total[df_total['Nome_Municipio'] == selected_municipios[0]]),
+                    len(df_total[df_total['Nome_Municipio'] == selected_municipios[1]])
+                ]
+            }
             
-#             # Calcular a taxa de nascimento abaixo do peso
-#             taxa_nascimento_abaixo_peso = [
-#                 (len(df_municipio1) / len(df_total[df_total['Nome_Municipio'] == selected_municipios[0]])) * 100,
-#                 (len(df_municipio2) / len(df_total[df_total['Nome_Municipio'] == selected_municipios[1]])) * 100
-#             ]
-#             metricas['Taxa de Nascimento Abaixo do Peso (%)'] = taxa_nascimento_abaixo_peso
+            # Calcular a taxa de nascimento abaixo do peso
+            taxa_nascimento_abaixo_peso = [
+                (len(df_municipio1) / len(df_total[df_total['Nome_Municipio'] == selected_municipios[0]])) * 100,
+                (len(df_municipio2) / len(df_total[df_total['Nome_Municipio'] == selected_municipios[1]])) * 100
+            ]
+            metricas['Taxa de Nascimento Abaixo do Peso (%)'] = taxa_nascimento_abaixo_peso
             
-#             df_metricas = pd.DataFrame(metricas)
+            df_metricas = pd.DataFrame(metricas)
 
-#             # Exibir métricas lado a lado
-#             col1, col2 = st.columns(2)
+            # Exibir métricas lado a lado
+            col1, col2 = st.columns(2)
 
-#             with col1:
-#                 st.subheader(selected_municipios[0])
-#                 st.metric("Nascimentos Abaixo do Peso", df_metricas['Nascimentos Abaixo do Peso'][0])
-#                 st.metric("Total de Nascimentos", df_metricas['Total de Nascimentos'][0])
-#                 st.metric("Taxa de Nascimento Abaixo do Peso (%)", round(df_metricas['Taxa de Nascimento Abaixo do Peso (%)'][0], 2))
+            with col1:
+                st.subheader(selected_municipios[0])
+                st.metric("Nascimentos Abaixo do Peso", df_metricas['Nascimentos Abaixo do Peso'][0])
+                st.metric("Total de Nascimentos", df_metricas['Total de Nascimentos'][0])
+                st.metric("Taxa de Nascimento Abaixo do Peso (%)", round(df_metricas['Taxa de Nascimento Abaixo do Peso (%)'][0], 2))
 
-#             with col2:
-#                 st.subheader(selected_municipios[1])
-#                 st.metric("Nascimentos Abaixo do Peso", df_metricas['Nascimentos Abaixo do Peso'][1])
-#                 st.metric("Total de Nascimentos", df_metricas['Total de Nascimentos'][1])
-#                 st.metric("Taxa de Nascimento Abaixo do Peso (%)", round(df_metricas['Taxa de Nascimento Abaixo do Peso (%)'][1], 2))
+            with col2:
+                st.subheader(selected_municipios[1])
+                st.metric("Nascimentos Abaixo do Peso", df_metricas['Nascimentos Abaixo do Peso'][1])
+                st.metric("Total de Nascimentos", df_metricas['Total de Nascimentos'][1])
+                st.metric("Taxa de Nascimento Abaixo do Peso (%)", round(df_metricas['Taxa de Nascimento Abaixo do Peso (%)'][1], 2))
 
-#             # Criar um gráfico comparativo
-#             fig = px.bar(df_metricas, x='Municipio', 
-#                         y=['Nascimentos Abaixo do Peso', 'Total de Nascimentos'], 
-#                         title='Comparativo de Nascimentos Abaixo do Peso por Município')
+            # Criar um gráfico comparativo
+            fig = px.bar(df_metricas, x='Municipio', 
+                        y=['Nascimentos Abaixo do Peso', 'Total de Nascimentos'], 
+                        title='Comparativo de Nascimentos Abaixo do Peso por Município')
 
-#             st.plotly_chart(fig)
-#         else:
-#             st.warning("Por favor, selecione exatamente dois municípios para comparação.")
-#     st.header("Visualização Comparativo Municipal")
-#     display_municipal_analysis_comparative(st.session_state['df_baixo_peso'],st.session_state['df_total'])  # Passar apenas df_baixo_peso
+            st.plotly_chart(fig)
+        else:
+            st.warning("Por favor, selecione exatamente dois municípios para comparação.")
+    st.header("Visualização Comparativo Municipal")
+    display_municipal_analysis_comparative(st.session_state['df_baixo_peso'],st.session_state['df_total'])  # Passar apenas df_baixo_peso
